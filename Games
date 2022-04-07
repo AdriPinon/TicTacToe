@@ -1,0 +1,694 @@
+// Have fun!
+//  main.cpp
+//  TicTacToe
+//  Created by Adriana Pinon
+//
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <iomanip>
+using namespace std;
+
+//==============================================
+// Global Constant Variable
+//==============================================
+const int NUM = 3;
+
+//==============================================
+// Struct Declaration
+//==============================================
+struct Player
+{
+    string name = { "N/A" };                   // Player's Name
+    char symbol = toupper(symbol);             // Player's choice of symbol (X or O)
+    int wins[2] = { 0 },                       // Number of time player wins, losses, & ties
+        losses[2] = { 0 },
+        ties[3] = { 0 };
+};
+
+//==============================================
+// Function Prototypes
+//==============================================
+char displayMenu(char& choice);
+char displayStatMenu(char& choice);
+void displayBoard(char board[][3]);
+void getPlayerInfo(Player playerInfo[], char choice);
+void playerTurn(Player playerInfo[], char board[][3], char playerSymbol, string playerName);
+bool isGameWon(char playerSymbol, char board[][3]);
+bool isGameTie(int moveCount);
+void aiTurn(Player playerInfo[], char board[][3]);
+void resetBoard(char board[][3]);
+void displayStats(Player playerInfo[], char choice);
+
+int main()
+{
+    int moveCount;
+    char choice;
+
+    Player playerInfo[NUM];
+
+    // game board has 3 rows and 3 columns
+    char board[NUM][NUM] = { {'*', '*', '*'},
+                             {'*', '*', '*'},
+                             {'*', '*', '*'}
+                           };
+
+    cout << "------------------------" << endl
+        << setw(19) << left << "|   TIC - TAC - TOE    |" << endl
+        << "------------------------" << endl << endl;
+
+    do
+    {
+        displayMenu(choice);
+
+        switch (choice)
+        {
+            // player vs. player
+        case '1':
+        {
+            system("CLS");
+
+            // reset move counter
+            moveCount = 0;
+
+            // prompts player to input name and symbol
+            getPlayerInfo(playerInfo, choice);
+
+
+            cout << setw(21) << right << "| The first to get |"
+            << setw(21) << endl << "| 3 in-a-row wins! |" << endl;
+
+            while (moveCount < 9)
+            {
+                // displays game
+                displayBoard(board);
+
+                // player 1 inputs in a move
+                playerTurn(playerInfo, board, playerInfo[0].symbol, playerInfo[0].name);
+
+                moveCount++;
+
+                // checks if game is over
+                if (isGameWon(playerInfo[0].symbol, board))
+                {
+                    // displays game board again for winning screen
+                    displayBoard(board);
+
+                    // displays winner
+                    cout << setw(15) << right << "===========" << endl;
+                    cout << setw (8) << right << playerInfo[0].name << " wins!" << endl;
+                    cout << setw(15) << right << "===========" << endl << endl;
+
+                    // tracks number of wins
+                    playerInfo[0].wins[0]++;
+                    
+                    // tracks number of losses
+                    playerInfo[1].losses[0]++;
+
+                    moveCount = 9;
+                }
+                else if (moveCount < 9)
+                {
+                    // displays game
+                    displayBoard(board);
+
+                    // player 2 inputs in a move
+                    playerTurn(playerInfo, board, playerInfo[1].symbol, playerInfo[1].name);
+
+                    moveCount++;
+
+                    // checks if game is over
+                    if (isGameWon(playerInfo[1].symbol, board))
+                    {
+                        // displays game board again for winning screen
+                        displayBoard(board);
+                        
+                        // displays winner
+                        cout << setw(15) << right << "===========" << endl;
+                        cout << setw(8) << right << playerInfo[1].name << " wins!" << endl;
+                        cout << setw(15) << right << "===========" << endl << endl;
+                        
+                        // tracks number of wins
+                        playerInfo[1].wins[0]++;
+
+                        // tracks number of losses
+                        playerInfo[0].losses[0]++;
+
+                        moveCount = 9;
+                    }
+                }
+                else
+                {
+                    // checks if it's a tie
+                    isGameTie(moveCount);
+
+                    //display board
+                    displayBoard(board);
+
+                    // displays tie
+                    cout << setw(15) << right << "===========" << endl;
+                    cout << setw(8) << right << "It's a tie!" << endl;
+                    cout << setw(15) << right << "===========" << endl;
+
+                    // tracks number of ties
+                    playerInfo[0].ties[0]++;
+                    playerInfo[1].ties[0]++;
+                }
+            }
+            resetBoard(board);
+
+            break;
+        }
+        // player vs. AI
+        case '2':
+        {
+            system("CLS");
+
+            // reset move counter
+            moveCount = 0;
+
+            // prompts player to input name and symbol
+            getPlayerInfo(playerInfo, choice);
+
+
+            cout << setw(21) << right << "| The first to get |"
+                << setw(21) << endl << "| 3 in-a-row wins! |" << endl;
+
+            while (moveCount < 9)
+            {
+                // displays game
+                displayBoard(board);
+
+                // player 1 inputs in a move
+                playerTurn(playerInfo, board, playerInfo[0].symbol, playerInfo[0].name);
+
+                moveCount++;
+
+                // checks if game is over
+                if (isGameWon(playerInfo[0].symbol, board))
+                {
+                    // displays game board again for winning screen
+                    displayBoard(board);
+
+                    // displays winner
+                    cout << setw(15) << right << "===========" << endl;
+                    cout << setw(8) << right << playerInfo[0].name << " wins!" << endl;
+                    cout << setw(15) << right << "===========" << endl << endl;
+
+                    // tracks number of wins
+                    playerInfo[0].wins[1]++;
+
+                    // tracks number of losses
+                    playerInfo[2].losses[1]++;
+
+                    moveCount = 9;
+                }
+                else if (moveCount < 9)
+                {
+                    // displays game
+                    displayBoard(board);
+
+                    // AI inputs in a move
+                    aiTurn(playerInfo, board);
+
+                    moveCount++;
+
+                    // checks if game is over
+                    if (isGameWon(playerInfo[2].symbol, board))
+                    {
+                        // displays game board again for winning screen
+                        displayBoard(board);
+
+                        // displays winner
+                        cout << setw(15) << right << "===========" << endl;
+                        cout << setw(8) << right << playerInfo[2].name << " wins!" << endl;
+                        cout << setw(15) << right << "===========" << endl << endl;
+
+                        // tracks number of wins
+                        playerInfo[2].wins[1]++;
+
+                        // tracks number of losses
+                        playerInfo[0].losses[1]++;
+
+                        moveCount = 9;
+                    }
+                }
+                else
+                {
+                    // checks if it's a tie
+                    isGameTie(moveCount);
+
+                    displayBoard(board);
+
+                    // displays tie
+                    cout << setw(15) << right << "===========" << endl;
+                    cout << setw(8) << right << "It's a tie!" << endl << endl;
+                    cout << setw(15) << right << "===========" << endl;
+
+                    // tracks number of ties
+                    playerInfo[0].ties[1]++;
+                    playerInfo[2].ties[1]++;
+                }
+            }
+            resetBoard(board);
+
+            break;
+        }
+        // show game stats
+        case '3':
+        {
+            displayStatMenu(choice);
+
+            switch (choice)
+            {
+            // shows player 1 and player 2 stats
+            case '1':
+            {
+                displayStats(playerInfo, choice);
+
+                break;
+            }
+            // shows player 1 and ai stats
+            case '2':
+            {
+                displayStats(playerInfo, choice);
+
+                break;
+            }
+            default:
+                break;
+            }
+
+            break;
+        }
+        // quit game
+        default:
+        {
+            cout << "Quitting Game" << endl;
+            break;
+        }
+        }
+    } while (choice != '4');
+    
+
+    return 0;
+}
+
+//===============================================
+// Function Definitions
+//===============================================
+
+// displays menu and gets player choice
+char displayMenu(char& choice)
+{
+    const char MIN = '1', MAX = '4';
+
+    cout << setw(14) << right << "MAIN MENU" << endl;
+    cout << "------------------------" << endl;
+    cout << "Please select an option." << endl;
+    cout << "========================" << endl << endl;
+    cout << "1) Player vs. Player" << endl
+        << "2) Player vs. AI" << endl
+        << "3) Game Stats" << endl
+        << "4) Quit Game" << endl << endl;
+
+    // player inputs menu choice
+    cout << "Enter here: ";
+    cin >> choice;
+
+    // checks if menu choice is valid
+    while (choice < MIN || choice > MAX)
+    {
+        cout << "That is not an option. "
+            << "Please try again: ";
+        cin >> choice;
+    }
+
+    cout << endl;
+
+    cout << "========================" << endl << endl;
+
+    return choice;
+}
+
+// displays stat menu and gets player choice
+char displayStatMenu(char& choice)
+{
+    const char MIN = '1', MAX = '3';
+
+    cout << setw(16) << right << "STATS MENU" << endl;
+    cout << "------------------------" << endl;
+    cout << "Please select an option." << endl;
+    cout << "========================" << endl << endl;
+    cout << "1) Stats for Player vs. Player" << endl
+        << "2) Stats for Player vs. AI" << endl
+        << "3) Main Menu" << endl << endl;
+
+    // player inputs menu choice
+    cout << "Enter here: ";
+    cin >> choice;
+
+    // checks if menu choice is valid
+    while (choice < MIN || choice > MAX)
+    {
+        cout << "That is not an option. "
+            << "Please try again: ";
+        cin >> choice;
+    }
+
+    cout << endl;
+
+    cout << "========================" << endl << endl;
+
+    return choice;
+}
+
+// players inputs in name
+void getPlayerInfo(Player playerInfo[], char choice)
+{
+    switch (choice)
+    {
+    // player chose player vs player
+    case '1':
+    {
+        // player enter name of player 1
+        cout << "Enter Player 1 name: ";
+        cin >> (playerInfo[0].name);
+
+        // player enters symbol
+        cout << "Do you want to be X or O: ";
+        cin >> playerInfo[0].symbol;
+        playerInfo[0].symbol = toupper(playerInfo[0].symbol);
+
+        // checks if player symbol is valid
+        while (playerInfo[0].symbol != 'X' && playerInfo[0].symbol != 'O')
+        {
+            cout << "That is not option. "
+                << "Please try again: ";
+            cin >> (playerInfo[0].symbol);
+            playerInfo[0].symbol = toupper(playerInfo[0].symbol);
+        }
+
+        cout << endl;
+
+        // enter name of player 2
+        cout << "Enter Player 2 name: ";
+        cin >> (playerInfo[1].name);
+
+        // if player 1 is 'X' then player 2 is 'O', vice versa
+        switch (playerInfo[0].symbol)
+        {
+        case 'X':
+        {
+            playerInfo[1].symbol = 'O';
+
+            // echoes player 2 symbol
+            cout << playerInfo[1].name << ", you are "
+                << playerInfo[1].symbol << "." << endl;
+
+            break;
+        }
+        default:
+        {
+            playerInfo[1].symbol = 'X';
+
+            // echoes player 2 symbol
+            cout << playerInfo[1].name << ", you are "
+                << playerInfo[1].symbol << "." << endl;
+
+            break;
+        }
+        }
+
+        cout << endl;
+        cout << "========================" << endl << endl;
+
+        break;
+    }
+    // player chose player vs ai
+    default:
+    {
+        // player enter name of player 1
+        cout << "Enter Player 1 name: ";
+        cin >> (playerInfo[0].name);
+
+        // assigns name AI to player 3
+        playerInfo[2].name = "AI";
+
+        // player enters symbol
+        cout << "Do you want to be X or O: ";
+        cin >> playerInfo[0].symbol;
+        playerInfo[0].symbol = toupper(playerInfo[0].symbol);
+
+        // checks if player symbol is valid
+        while (playerInfo[0].symbol != 'X' && playerInfo[0].symbol != 'O')
+        {
+            cout << "That is not option. "
+                << "Please try again: ";
+            cin >> (playerInfo[0].symbol);
+            playerInfo[0].symbol = toupper(playerInfo[0].symbol);
+        }
+
+        cout << endl;
+
+        // if player 1 is 'X' then AI is 'O', vice versa
+        switch (playerInfo[0].symbol)
+        {
+        case 'X':
+        {
+            playerInfo[2].symbol = 'O';
+
+            // echoes player 2 symbol
+            cout << "AI is "
+                << playerInfo[2].symbol << "." << endl;
+
+            break;
+        }
+        default:
+        {
+            playerInfo[2].symbol = 'X';
+
+            // echoes player 2 symbol
+            cout << "AI is "
+                << playerInfo[2].symbol << "." << endl;
+
+            break;
+        }
+        }
+
+        cout << endl;
+        cout << "========================" << endl << endl;
+
+        break;
+    }
+    }
+}
+
+// displays game board
+void displayBoard(char board[][3])
+{
+    cout << setw(21) << right << "====================" << endl << endl;
+    cout << setw(8) << right << '1'
+        << setw(5) << '2' << setw(5)
+        << '3'  << endl << endl;
+
+     // loops rows to display it 3 times
+    for (int row = 0; row < 3; row++)
+    {
+        cout << setw(4) << row + 1 << "   ";
+
+        // // loops columns to display it 3 times
+        for (int col = 0; col < 3; col++)
+        {
+            cout << board[row][col] << "    ";
+        }
+        
+        cout << endl << endl;
+    }
+}
+
+// prompts player to pick a move (row, column)
+void playerTurn(Player playerInfo[], char board[][3], char playerSymbol, string playerName)
+{
+    int row, col;
+
+    // Player 1's turn
+    cout << setw(16) << right << "-----------" << endl;
+    cout << setw(8) << right << playerName << "'s turn." << endl;
+    cout << setw(16) << right << "-----------" << endl;
+
+    // prompts player to pick a row and column
+    cout << "Enter in a row: ";
+    cin >> row;
+    cout << "Enter in a column: ";
+    cin >> col;
+    cout << endl;
+
+    // checks if player row
+    // & column choice has '*'
+    // if does then it is a valid input
+    while (board[row - 1][col - 1] != '*')
+    {
+        cout << "Invalid move. Please try again." << endl;
+        cout << "Enter in a row: ";
+        cin >> row;
+        cout << "Enter in a column: ";
+        cin >> col;
+        cout << endl;
+    }
+
+    // assign player's move to array index
+    board[row - 1][col - 1] = playerSymbol;
+
+}
+
+// checks if the player wins
+bool isGameWon(char playerSymbol, char board[][3])
+{
+    bool win;
+
+    // check rows
+    for (int row = 0; row < 3; row++) {
+
+        win = true;
+
+        for (int col = 0; col < 3; col++) {
+
+            win *= (board[row][col] == playerSymbol);
+        }
+
+        if (win)
+            return true;
+    }
+
+    // check columns
+    for (int col = 0; col < 3; col++) {
+        win = true;
+        for (int row = 0; row < 3; row++) {
+            win *= (board[row][col] == playerSymbol);
+        }
+
+        if (win)
+            return true;
+    }
+
+    //check diagonal
+    win = true;
+    for (int i = 0; i < 3; i++) {
+        win *= (board[i][i] == playerSymbol);
+    }
+
+    if (win)
+        return true;
+
+    //check diagonal
+    win = true;
+    for (int col = 0; col < 3; col++) {
+        win *= (board[2 - col][col] == playerSymbol);
+    }
+
+    if (win)
+        return true;
+
+    return false;
+}
+
+// checks if game is a tie
+bool isGameTie(int moveCount)
+{
+    if (moveCount == 9)
+    {
+        return true;
+    }
+    else
+        return false;
+}
+
+// ai picks a move
+void aiTurn(Player playerInfo[], char board[][3])
+{
+    int max = 2, min = 0;
+    int row, col;
+    int seed = time(0);
+
+    srand(seed);
+
+    cout << setw(16) << right << "-----------" << endl;
+    cout << setw(16) << right << "AI's turn." << endl;
+    cout << setw(16) << right << "-----------" << endl;
+
+    // picks random spot on game board
+    row = rand() % (max - min + 1);
+    col = rand () % (max - min + 1);
+
+    // input validation for move
+    while (board[row][col] != '*')
+    {
+        row = rand() % (max - min + 1);
+        col = rand() % (max - min + 1);
+    }
+
+    cout << "AI picked row: " << row + 1 << " column: " << col + 1 << endl << endl;
+
+    board[row][col] = playerInfo[2].symbol;
+
+}
+
+// resest board to '*'
+void resetBoard(char board[][3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            board[i][j] = { '*' };
+        }
+    }
+
+}
+
+// displays player stats (name, wins, losses, ties)
+void displayStats(Player playerInfo[], char choice)
+{
+    cout << "= PLAYER STATS =========================================" << endl;
+    cout << "= " << setw(20) << left << "Player Name";
+    cout << setw(15) << "Wins";
+    cout << setw(15) << "Losses";
+    cout << setw(15) << "Ties" << endl << endl;
+
+    switch (choice)
+    {
+    // user chose show player vs player stats
+    case '1':
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            cout << "= " << setw(20) << left << playerInfo[i].name;
+            cout << setw(15) << playerInfo[i].wins[0];
+            cout << setw(15) << playerInfo[i].losses[0];
+            cout << setw(15) << playerInfo[i].ties[0] << endl << endl;
+        }
+        break;
+    }
+    // user chose show player vs ai stats
+    default:
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (i != 1)
+            {
+                cout << "= " << setw(20) << left << playerInfo[i].name;
+                cout << setw(15) << playerInfo[i].wins[1];
+                cout << setw(15) << playerInfo[i].losses[1];
+                cout << setw(15) << playerInfo[i].ties[1] << endl << endl;
+            }
+
+        }
+        break;
+    }
+    }
+
+    cout << "========================================================" << endl << endl;
+}
